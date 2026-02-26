@@ -1,7 +1,8 @@
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const OpenAI = require("openai");
+
+import express from "express";
+import cors from "cors";
+import axios from "axios";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -9,26 +10,26 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-app.post("/api/chat", async (req, res) => {
+app.post("/chat", async (req, res) => {
   try {
-    const { message } = req.body;
+    const response = await axios.post(
+      "https://router.huggingface.co/models/google/flan-t5-large",
+      { inputs: req.body.message },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.HF_API_KEY}`,
+        },
+      }
+    );
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",  // ✅ Demo-friendly, lower quota
-      messages: [
-        { role: "system", content: "You are a helpful multilingual assistant." },
-        { role: "user", content: message }
-      ]
+    res.json({
+      reply: response.data[0]?.generated_text || "No response",
     });
 
-    res.json({ reply: response.choices[0].message.content });
-
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "AI error" });
+    console.error(error.response?.data || error.message);
+    res.status(500).json({ error: "AI failed" });
   }
 });
 
-app.listen(5000, () => console.log("Backend running on port 5000"));
+app.listen(5000, () => console.log("Server running on 5000"));

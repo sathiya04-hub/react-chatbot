@@ -15,9 +15,10 @@ A **React + Node.js AI Voice Chatbot** with:
 my-chatbot/
 ├─ frontend/ # React app
 ├─ backend/ # Node.js backend
+└─.env # placeholder for API keys
 ├─ .gitignore # ignores node_modules, .env, build files
 ├─ README.md
-└─ .env.example # placeholder for API keys
+
 
 ## ⚡ Setup Instructions
 

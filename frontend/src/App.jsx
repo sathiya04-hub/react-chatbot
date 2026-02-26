@@ -10,7 +10,6 @@ function App() {
   const [language, setLanguage] = useState("en-US");
   const chatEndRef = useRef(null);
 
-  // Scroll to bottom
   useEffect(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), [messages, isTyping]);
 
   // Text-to-Speech
@@ -20,12 +19,12 @@ function App() {
     speechSynthesis.speak(utterance);
   };
 
-  // Send message to backend
+  // Send message
   const sendMessage = async (customText) => {
     const messageText = customText || input;
     if (!messageText.trim()) return;
 
-    setMessages((prev) => [...prev, { text: messageText, sender: "user" }]);
+    setMessages(prev => [...prev, { text: messageText, sender: "user" }]);
     setInput("");
     setIsTyping(true);
 
@@ -35,11 +34,15 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: messageText })
       });
+
+      if (!res.ok) throw new Error("Server error");
+
       const data = await res.json();
-      setMessages((prev) => [...prev, { text: data.reply, sender: "bot" }]);
+      setMessages(prev => [...prev, { text: data.reply, sender: "bot" }]);
       speak(data.reply);
+
     } catch (err) {
-      setMessages((prev) => [...prev, { text: "Server connection failed.", sender: "bot" }]);
+      setMessages(prev => [...prev, { text: "Server connection failed.", sender: "bot" }]);
     }
 
     setIsTyping(false);
@@ -68,7 +71,7 @@ function App() {
     <div className="container vh-100 d-flex justify-content-center align-items-center bg-light">
       <div className="card shadow-lg" style={{ width: "450px" }}>
         <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-          <span>My Chatbot</span>
+          <span>AI Voice Chatbot</span>
           <select className="form-select form-select-sm w-auto" value={language} onChange={(e) => setLanguage(e.target.value)}>
             <option value="en-US">English</option>
             <option value="ta-IN">Tamil</option>
@@ -84,11 +87,9 @@ function App() {
               </div>
             </div>
           ))}
-          {isTyping && (
-            <div className="d-flex mb-2 justify-content-start">
-              <div className="p-2 rounded bg-secondary text-white">AI is typing...</div>
-            </div>
-          )}
+          {isTyping && <div className="d-flex mb-2 justify-content-start">
+            <div className="p-2 rounded bg-secondary text-white">AI is typing...</div>
+          </div>}
           <div ref={chatEndRef}></div>
         </div>
 
